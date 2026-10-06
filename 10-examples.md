@@ -151,12 +151,11 @@ The Robinson Gap mine lead joins the main line just west of Alarka Jct West (`aj
 ### The signals: new blocks, new mappings
 
 ```json
-"blocks": {
-  "rg":      { "spans": [ ... two spans, one per leg of Nit5 ... ] },
-  "rg-bk":   { "spans": [ ... the main west of the junction ... ] },
-  "rg-mine": { "spans": [ ... the mine lead ... ] }
-},
-"autoSignals": {
+"AJ-W": {
+  "blocks": {
+    "rg": { "spans": [ ... two spans, one per leg of Nit5 ... ] }
+  },
+  "autoSignals": {
   "aj-wm": { "headConfiguration": "Double",
              "blocks": { "$replace": [ "aj-w", "rg" ] },
              "interlockingRouteMapping": { "$replace": [ 0, 1 ] } },
@@ -166,10 +165,18 @@ The Robinson Gap mine lead joins the main line just west of Alarka Jct West (`aj
   "RG_entry": { "direction": "Right", "headConfiguration": "Double",
                 "blocks": [ "rg", "aj-w" ], "interlockingRouteMapping": [ 1, 3 ],
                 "location": { "segmentId": "Sjdl", "distance": 20.49, "end": "Start" } }
+  }
+},
+"AJ-BK": {
+  "blocks": {
+    "rg-bk":   { "spans": [ ... the main west of the junction ... ] },
+    "rg-mine": { "spans": [ ... the mine lead ... ] }
+  }
 }
 ```
 
 - The junction's track is a second OS block, `rg`. Every signal at the control point now protects both OS blocks, so a train on either switch holds all of them.
+- The new outlet blocks `rg-bk` and `rg-mine` are defined in the plain module `AJ-BK`, not in `AJ-W`. In `AJ-W` they would be OS blocks: a train approaching on the main or coming down the mine lead would cancel the route, and the dispatcher couldn't code one while it waited (see [The interlocking's own blocks](05-control-points.md#the-interlockings-own-blocks)). An earlier version of this example made that mistake.
 - The westbound signals `aj-wm` and `aj-ws` become double: top head for the main to Bryson, second head for the mine.
 - `RG_entry` is the new signal on the mine lead, for trains coming out onto the main.
 - The westbound home signal `aj-we` stands west of the new switch, so it's moved there and its predicate heads are rewritten to include `Nit5`.

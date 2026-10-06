@@ -61,6 +61,8 @@ Every switch position you want to be usable needs a route. Positions with no mat
 
 Blocks in the same module as the interlocking are its **OS blocks** (the track over the switches). When a route is coded they all get the traffic direction, and the interlocking won't move a switch while any of them is occupied. Signals at the control point list them in `blocks`, so a train standing on the switches holds every signal at Stop.
 
+**Keep outlet blocks out of the control point's module.** The game counts *every* block in the module as an OS block, whether or not it covers the switches. Once a route is coded, a train entering any of them cancels it, and while one is occupied the dispatcher can't code or cancel a route at that control point. So the blocks in the outlets (the track a train approaches on) belong in a module without an interlocking: the stretch's own module, or a neighbouring one, the way the base game keeps the blocks east of Bryson East in `GI-BR`. Under RailForge, prefer a module that comes before the control point's; forward references to blocks are accepted, but not to interlockings (see [Forward references](08-railforge.md#forward-references)).
+
 ### Signals at the control point
 
 Each signal at the control point faces into the OS block and uses `interlockingRouteMapping` to say which route each head follows:
