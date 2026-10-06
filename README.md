@@ -28,3 +28,7 @@ Written against SignalsEverywhere 1.4 (October 2026). Some behavior described he
 ## Credits
 
 SignalsEverywhere is by Joo200. This guide is by Tetz95, from building the signal mods on Nexus (Branch Junctions, TRD Entry Signal, Alarka Branch Signals) and reading SignalsEverywhere's and the game's code along the way. Corrections are welcome as issues or pull requests.
+
+## License
+
+This guide is licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/); see [LICENSE](LICENSE). You may share and adapt it, including in your own mods' docs, as long as you credit Tetz95 and link back here.
