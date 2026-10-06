@@ -136,7 +136,7 @@ Set it to `null`:
 ```
 
 - **Auto signals**: safe.
-- **Predicate signals**: SignalsEverywhere 1.4 crashes on a `null` predicate signal and skips the rest of that module (fixed by Tetz's SignalsEverywhere Fixes, pending upstream as PR #5). RailForge refuses the whole module instead. Rather than removing a predicate signal, move it with `$moveTo` or rewrite it. See [Patching](07-patching.md#known-problems).
+- **Predicate signals**: SignalsEverywhere 1.4 crashes on a `null` predicate signal and skips the rest of that module (fixed by Tetz's SignalsEverywhere Fixes, pending upstream as PR #5). RailForge refuses the whole module instead. Rather than removing a predicate signal, rewrite it (or move it with `$moveTo`, but never a control point's signal; see [RailForge](08-railforge.md#forward-references)). See [Patching](07-patching.md#known-problems).
 
 ## Signals are rebuilt, not edited
 

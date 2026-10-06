@@ -414,7 +414,7 @@ Set it to `null`:
 ```
 
 - **Auto signals**: safe.
-- **Predicate signals**: SignalsEverywhere 1.4 crashes on a `null` predicate signal and skips the rest of that module (fixed by Tetz's SignalsEverywhere Fixes, pending upstream as PR #5). RailForge refuses the whole module instead. Rather than removing a predicate signal, move it with `$moveTo` or rewrite it. See [Patching](#known-problems).
+- **Predicate signals**: SignalsEverywhere 1.4 crashes on a `null` predicate signal and skips the rest of that module (fixed by Tetz's SignalsEverywhere Fixes, pending upstream as PR #5). RailForge refuses the whole module instead. Rather than removing a predicate signal, rewrite it (or move it with `$moveTo`, but never a control point's signal; see [RailForge](#forward-references)). See [Patching](#known-problems).
 
 ## Signals are rebuilt, not edited
 
@@ -721,12 +721,14 @@ Instructions are properties that start with `$`.
 `$moveTo` takes a JSON path from the root of the document, quoted in brackets because ids contain dashes and spaces:
 
 ```json
-{ "BR-E": { "BR-E": { "predicateSignals": {
-  "br-ee": { "$moveTo": "['BR-EL-GI-WH']['Walker_Branch']['predicateSignals']" }
+{ "MY-FEATURE": { "OLD-MODULE": { "autoSignals": {
+  "my-signal": { "$moveTo": "['MY-FEATURE']['NEW-MODULE']['autoSignals']" }
 } } } }
 ```
 
 The destination must already exist when this patch is applied. If your own mod creates it, create it in an earlier file and move in a later one. Moving a signal deletes the old game object and builds it again in the new module.
+
+**Never move a control point's signal out of that control point's module.** A signal belongs to the interlocking of the module it's in. Moved anywhere else, the game treats it as an intermediate signal, and the auto engineer will pass it at Stop.
 
 ### On an array
 
@@ -794,7 +796,7 @@ Two rules follow from this.
 |---|---|---|
 | A block | `"block-id": null` | Update everything that names it. |
 | An auto signal | `"signal-id": null` | Safe. |
-| A predicate signal | `"signal-id": null` | Crashes SignalsEverywhere 1.4 (see below). Prefer `$moveTo` or rewriting it. |
+| A predicate signal | `"signal-id": null` | Crashes SignalsEverywhere 1.4 (see below). Rewrite it instead, or `$moveTo` it if it isn't a control point signal. |
 | A whole module | `"MODULE": null` | Deletes the module's game object and everything in it. |
 | An array item | `{ "$find": [...], "$remove": true }` | Works. |
 | A property | `"prop": { "$remove": true }` | Fine for an array or plain value. For a property holding an object it fails in 1.4 (see below); `$replace` the parent instead. |
@@ -807,7 +809,7 @@ These are bugs in SignalsEverywhere 1.4 with fixes sent upstream. Tetz's Signals
 |---|---|---|---|
 | **Array item edits don't count as a touch.** `$find`, `$index`, `$add` and `$append` inside an existing array change the patched data but are recorded under the wrong path, so the component isn't rebuilt. | Your edit shows in `signal-patched.json`, but the game behaves as before. | Also put a harmless `$replace` on the same component, such as `"switchSets": { "$replace": [ ...same value... ] }`. | PR #7 |
 | **Only one interlocking per module is seen.** A stock module with two (Alarka Jct: `aj-e` and `aj-w`) only exposes the first. | You can't patch `aj-w`; patching `aj-e` adds a second interlocking. | Needs Tetz's SignalsEverywhere Fixes (moves the second one into its own module, `AJ-W`). | PR #4 |
-| **`null` predicate signal crashes.** | The predicate signal is deleted, then the rest of the module is skipped. | Rewrite or `$moveTo` instead of removing. | PR #5 |
+| **`null` predicate signal crashes.** | The predicate signal is deleted, then the rest of the module is skipped. | Rewrite it instead of removing it. | PR #5 |
 | **Stock intermediates on a feature object** keep pointing at old signals next to a new control point. | Errors about aspects; the new control point's signals clear without a route. | See [Intermediates](#intermediates-1). | PR #8 |
 | **`$remove` on a property that holds an object** throws "Unsupported patch instructions". | The file stops applying at that point. | `$replace` the parent object, or `$remove` the whole array item. | PR #9 |
 
@@ -833,12 +835,13 @@ The checks we've run into:
 
 Everything a signal or predicate names must already exist **when that signal is created**: in the same module, in an earlier module, or in the game's own data. Modules are created in order, feature by feature, with the game's modules first and new modules after them in the order they appear in the patched data.
 
-This bites predicate signals that name another control point. If module `AB-S` has a predicate signal naming interlocking `ab-w`, and `ab-w` is in module `AB-W` which comes later, RailForge defers `AB-S`. It also applies to the game's own modules: a stock predicate signal in `BR-E` that names `br-w` in `BR-W` (which comes after it) gets deferred as soon as your mod patches it.
+This bites predicate signals that name another control point. If module `AB-S` has a predicate signal naming interlocking `ab-w`, and `ab-w` is in module `AB-W` which comes later, RailForge defers `AB-S`. Some RailForge versions also apply it to the game's own control points: a stock predicate signal in `BR-E` that names `br-w` in `BR-W` (which comes after it) gets deferred as soon as your mod patches it. SignalsEverywhere itself has no trouble with a control point that's already in the game, because it indexes every existing interlocking before building anything; the check is stricter than it needs to be. RailForge 0.14.71 no longer flags this case.
 
 Fixes:
 
-- Put signals that name other control points in a module that comes after all of them. A new module is added after the existing ones, so a new last module works.
-- For a stock predicate signal that has to keep its reference, `$moveTo` it into a later module and patch it there. The destination must already exist, so create it in one `signals` file and move into it from a second file.
+- **For a new control point:** define it in a module that comes before every signal that names it. A new module is added after the existing ones, in the order they appear.
+- **For a signal at a control point:** keep it in its control point's module. **Don't move it to another module to get past this check.** A signal only belongs to a control point when it sits in that control point's module; anywhere else, the game treats it as an intermediate signal. The auto engineer then stops at it and passes it at Stop, as it would at any intermediate signal. Tetz's SignalsEverywhere Fixes 1.4.0 lets RailForge accept a reference to a control point that's already in the game, which covers the stock case above.
+- **For a signal that isn't part of a control point** (an intermediate, or a stand-alone predicate signal), moving it to a later module with `$moveTo` is fine. The destination must already exist, so create it in one `signals` file and move into it from a second file.
 
 Forward references to **blocks** are fine.
 

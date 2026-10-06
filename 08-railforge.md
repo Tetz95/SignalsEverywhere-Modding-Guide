@@ -18,12 +18,13 @@ The checks we've run into:
 
 Everything a signal or predicate names must already exist **when that signal is created**: in the same module, in an earlier module, or in the game's own data. Modules are created in order, feature by feature, with the game's modules first and new modules after them in the order they appear in the patched data.
 
-This bites predicate signals that name another control point. If module `AB-S` has a predicate signal naming interlocking `ab-w`, and `ab-w` is in module `AB-W` which comes later, RailForge defers `AB-S`. It also applies to the game's own modules: a stock predicate signal in `BR-E` that names `br-w` in `BR-W` (which comes after it) gets deferred as soon as your mod patches it.
+This bites predicate signals that name another control point. If module `AB-S` has a predicate signal naming interlocking `ab-w`, and `ab-w` is in module `AB-W` which comes later, RailForge defers `AB-S`. Some RailForge versions also apply it to the game's own control points: a stock predicate signal in `BR-E` that names `br-w` in `BR-W` (which comes after it) gets deferred as soon as your mod patches it. SignalsEverywhere itself has no trouble with a control point that's already in the game, because it indexes every existing interlocking before building anything; the check is stricter than it needs to be. RailForge 0.14.71 no longer flags this case.
 
 Fixes:
 
-- Put signals that name other control points in a module that comes after all of them. A new module is added after the existing ones, so a new last module works.
-- For a stock predicate signal that has to keep its reference, `$moveTo` it into a later module and patch it there. The destination must already exist, so create it in one `signals` file and move into it from a second file.
+- **For a new control point:** define it in a module that comes before every signal that names it. A new module is added after the existing ones, in the order they appear.
+- **For a signal at a control point:** keep it in its control point's module. **Don't move it to another module to get past this check.** A signal only belongs to a control point when it sits in that control point's module; anywhere else, the game treats it as an intermediate signal. The auto engineer then stops at it and passes it at Stop, as it would at any intermediate signal. Tetz's SignalsEverywhere Fixes 1.4.0 lets RailForge accept a reference to a control point that's already in the game, which covers the stock case above.
+- **For a signal that isn't part of a control point** (an intermediate, or a stand-alone predicate signal), moving it to a later module with `$moveTo` is fine. The destination must already exist, so create it in one `signals` file and move into it from a second file.
 
 Forward references to **blocks** are fine.
 
