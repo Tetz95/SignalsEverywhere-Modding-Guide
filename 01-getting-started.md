@@ -30,13 +30,14 @@ A signal mod is a data-only mod: a folder in `Railroader/Mods` with a `Definitio
 ```
 
 - **`loadAfter`** controls the order patches are applied. List SignalsEverywhere and every mod whose signals you change or build on, so their changes are already there when yours are applied.
-- A mixinto can be one string or a list. A list entry can also be an object with its own `requires`, for a file that only applies when another mod is installed:
-
-  ```json
-  "game-graph": [ { "mixinto": "file(signs.json)", "requires": [ "ALW.SceneryAssets" ] } ]
-  ```
-
+- A mixinto can be one string or a list. A list entry can also be an object with its own `requires`, for a file that only applies when another mod is installed (example below).
 - You can split `signals` across several files. They are applied in the order listed. A second file is useful when one patch needs something an earlier one creates (see `$moveTo` in [Patching](07-patching.md)).
+
+A mixinto that only applies when another mod is installed:
+
+```json
+"game-graph": [ { "mixinto": "file(signs.json)", "requires": [ "ALW.SceneryAssets" ] } ]
+```
 
 ## How SignalsEverywhere uses your files
 

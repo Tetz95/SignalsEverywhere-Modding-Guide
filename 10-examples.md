@@ -179,8 +179,11 @@ The Robinson Gap mine lead joins the main line just west of Alarka Jct West (`aj
 
 ```json
 { "panel": { "Mainline": [
-  { "$find": [ { "path": "Type", "value": "Light" }, { "path": "X", "value": 39 }, { "path": "Y", "value": 2 } ],
-    "$replace": { "Type": "Light", "Block": "aj-w", "X": 39, "Y": 2, "Color": "red", "ShowTrack": false } },
+  { "$find": [ { "path": "Type", "value": "Light" },
+               { "path": "X", "value": 39 },
+               { "path": "Y", "value": 2 } ],
+    "$replace": { "Type": "Light", "Block": "aj-w", "X": 39, "Y": 2,
+                  "Color": "red", "ShowTrack": false } },
   { "$add": { "Type": "Light", "Block": "rg", "X": 37.6, "Y": 2, "Color": "red", "ShowTrack": false,
               "Interlock": { "Interlock": "aj-w",
                              "VanillaSwitchKnobIds": [ "35", "aj-w-1" ], "VanillaDirKnobId": "36",
