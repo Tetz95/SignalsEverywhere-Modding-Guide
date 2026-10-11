@@ -3,8 +3,12 @@
 ## What you need
 
 - **Railroader** with the signal system available: in company mode the signal progressions must be bought; in sandbox, the CTC map feature must be on. SignalsEverywhere builds signals when the CTC panel exists, so nothing happens before that.
-- **A mod loader that runs SignalsEverywhere**: Railloader, or RailForge (which loads Railloader-style mods).
-- **SignalsEverywhere** and **StrangeCustoms**, which it requires.
+- **A mod loader that runs SignalsEverywhere**, one of:
+  - Railloader with StrangeCustoms;
+  - RailForge;
+  - FUSE.
+  RailForge and FUSE each replace both Railloader and StrangeCustoms, so don't install those alongside them.
+- **SignalsEverywhere**.
 - A text editor that understands JSON. SignalsEverywhere ships JSON schemas (`signals.schema.json`, `ctc-panel-layout.schema.json`) in its mod folder. Point your file's `$schema` at them for hints; SignalsEverywhere removes the `$schema` key before it reads the file. Be aware that the schemas in SignalsEverywhere 1.4 reject some valid data, so treat schema errors as hints, not proof.
 
 ## The mod definition
