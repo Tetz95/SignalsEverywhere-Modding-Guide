@@ -574,7 +574,50 @@ A crossover is a control point that can have more than one route set at once, li
 
 Signals in a crossover are auto signals with `interlockingRouteMapping` (one route per head, like an interlocking). Predicate signals in a crossover can add `"crossoverGroup": "<groupId>"` to a predicate to tie it to a group's direction.
 
-Crossovers are SignalsEverywhere's own addition, not part of the base game. If you can, find a mod that uses one and dump its signals to see a working example before you write your own.
+Crossovers are SignalsEverywhere's own addition, not part of the base game.
+
+**Make every `groupId` unique across the whole map, not just within the crossover.** SignalsEverywhere saves a group's direction under `crossover:<groupId>:direction`, without the crossover's id. Two crossovers that both have a group `aeb` share one setting: clearing one clears the other's group too. Prefix the group with the crossover's id (`xo-aeb`).
+
+**One group per track and direction.** A group is the signals on one track facing one way. Its `allowedRoutes` are the routes a train on that track, going that way, can take: for a double crossover between tracks A and B, the eastbound group on A gets "A straight" and "A over to B". Each group then needs its own `allowedDirection`.
+
+**Coding applies every knob.** The code button reads all of the crossover's switch knobs and group knobs and codes them together. SignalsEverywhere first checks every group that's set; if any of them can't clear (its track is occupied, its route isn't lined, or it clashes with another group), nothing is coded, not even the groups that could. So before you code a new move, put any group whose train has already gone back to the middle.
+
+**Scissors crossovers.** Where the two crossover legs cross each other in a diamond, a train on one leg fouls the other. Put both legs' blocks in each crossing route's `usedBlocks`, and the two diagonal moves can't be set together.
+
+### A double crossover
+
+Tracks A and B, a crossover X1 from A (west) to B (east) and X2 from B (west) to A (east). Each crossover's switch set is the switch at both ends, thrown together. Outlets 0 and 1 are A and B on the west side, 2 and 3 on the east.
+
+```json
+"crossover": {
+  "id": "xo",
+  "displayName": "Example Crossover",
+  "switchSets": [
+    [ "<X1 switch on A>", "<X1 switch on B>" ],
+    [ "<X2 switch on B>", "<X2 switch on A>" ]
+  ],
+  "outlets": [
+    { "direction": "Left",  "blocks": [ "xo-aw" ], "nextSignal": "<next signal west on A>" },
+    { "direction": "Left",  "blocks": [ "xo-bw" ], "nextSignal": "<next signal west on B>" },
+    { "direction": "Right", "blocks": [ "xo-ae" ], "nextSignal": "<next signal east on A>" },
+    { "direction": "Right", "blocks": [ "xo-be" ], "nextSignal": "<next signal east on B>" }
+  ],
+  "routes": [
+    { "switchFilters": [ "Normal", "Normal" ],   "outletLeft": 0, "outletRight": 2, "usedBlocks": [ "xo-a" ] },
+    { "switchFilters": [ "Normal", "Normal" ],   "outletLeft": 1, "outletRight": 3, "usedBlocks": [ "xo-b" ] },
+    { "switchFilters": [ "Reversed", "Normal" ], "outletLeft": 0, "outletRight": 3, "usedBlocks": [ "xo-a", "xo-x1", "xo-b" ] },
+    { "switchFilters": [ "Normal", "Reversed" ], "outletLeft": 1, "outletRight": 2, "usedBlocks": [ "xo-b", "xo-x2", "xo-a" ] }
+  ],
+  "signalGroups": [
+    { "groupId": "xo-aeb", "signals": [ "xo-aeb" ], "allowedDirection": "Right", "allowedRoutes": [ 0, 2 ] },
+    { "groupId": "xo-beb", "signals": [ "xo-beb" ], "allowedDirection": "Right", "allowedRoutes": [ 1, 3 ] },
+    { "groupId": "xo-awb", "signals": [ "xo-awb" ], "allowedDirection": "Left",  "allowedRoutes": [ 0, 3 ] },
+    { "groupId": "xo-bwb", "signals": [ "xo-bwb" ], "allowedDirection": "Left",  "allowedRoutes": [ 1, 2 ] }
+  ]
+}
+```
+
+The plant blocks `xo-a`, `xo-b`, `xo-x1` and `xo-x2` go in the crossover's module; the outlet blocks don't (see [The interlocking's own blocks](#the-interlockings-own-blocks)). The signals `xo-aeb` (eastbound on A at the west end) and so on are auto signals in the same module, each head mapped to the routes its group can take. With both crossovers normal, eastbound on A and westbound on B can be cleared at the same time; "A over to B" uses both tracks' blocks, so it clears only on its own.
 
 ---
 
@@ -649,7 +692,14 @@ An element with `Interlock` gets a lever in the control row under its column. Pu
 
 Knob state is stored by id: `<interlocking>-0`, `<interlocking>-1`, … for switch knobs, `<interlocking>-D` for the direction knob. The game's own levers keep their old ids through `VanillaSwitchKnobIds` and `VanillaDirKnobId`; leave those as they are when you patch a stock lever.
 
-For a crossover, `Crossover` takes `Crossover` (the id), `SwitchKnobOrder`, `SignalKnobOrder`, `SwitchLabels` and `SignalLabels` (one per signal group).
+For a crossover, `Crossover` takes `Crossover` (the id), `SwitchKnobOrder`, `SignalKnobOrder`, `SwitchLabels` and `SignalLabels` (one per signal group). Its knobs are stored as `<crossover>-0`, `<crossover>-1`, … for the switch sets and `<crossover>-<groupId>` for each group.
+
+Drawing a crossover:
+
+- Put the `Crossover` entry on a `Light` (an OS light with `"Color": "red"` and `"ShowTrack": false` works well), in the column where the crossover is drawn.
+- A crossover lever is about four knobs wide (two switch knobs, four group knobs for a double crossover). Leave about ten columns between it and the next lever, with a light or track piece in every one of them, or the levers overlap. Columns count as distinct `X` values (see [How X works](#how-x-works)): `X` 5 and `X` 16 with nothing between are only one column apart.
+- Draw each crossover with one switch piece. The piece goes on one track, and its diverging leg reaches the other; nothing is drawn on the other track in that column, so fill it with a `Track` or `Light` piece, or that track has a gap. For X1 from A (row 2) down to B (row 3): `SwitchRightBottom` at X 5 on row 2, and a `Track` at X 5 on row 3.
+- For a scissors crossover, put both switch pieces in the same column (one `SwitchRightBottom` on the upper track, one `SwitchLeftTop` on the lower), so the legs cross in an X. Each fills the other's gap.
 
 Levers only appear in CTC mode.
 
@@ -1262,7 +1312,7 @@ In a crossover module, a predicate can add `crossoverGroup`.
 
 ### Crossover
 
-Interlocking fields, plus `routes[].usedBlocks` (list of block ids) and `signalGroups`: list of `{ groupId, signals, allowedDirection, allowedRoutes }`.
+Interlocking fields, plus `routes[].usedBlocks` (list of block ids) and `signalGroups`: list of `{ groupId, signals, allowedDirection, allowedRoutes }`. A `groupId` must be unique across the whole map (its state is saved as `crossover:<groupId>:direction`).
 
 ### Aspects
 

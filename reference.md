@@ -86,7 +86,7 @@ In a crossover module, a predicate can add `crossoverGroup`.
 
 ### Crossover
 
-Interlocking fields, plus `routes[].usedBlocks` (list of block ids) and `signalGroups`: list of `{ groupId, signals, allowedDirection, allowedRoutes }`.
+Interlocking fields, plus `routes[].usedBlocks` (list of block ids) and `signalGroups`: list of `{ groupId, signals, allowedDirection, allowedRoutes }`. A `groupId` must be unique across the whole map (its state is saved as `crossover:<groupId>:direction`).
 
 ### Aspects
 
