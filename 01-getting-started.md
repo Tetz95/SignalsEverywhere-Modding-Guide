@@ -13,7 +13,7 @@
 
 ## The mod definition
 
-A signal mod is a data-only mod: a folder in `Railroader/Mods` with a `Definition.json` and your JSON files. SignalsEverywhere reads two mixinto types:
+A signal mod is a data-only mod: a folder in `Railroader/Mods` with a `Definition.json` and your JSON files. Keep it data only: under FUSE, a folder that also has a Unity Mod Manager entry (an `info.json` with a DLL) doesn't get its `signals` and `ctcPanel` files passed to SignalsEverywhere, so its signals never appear. If your mod needs code, ship the code as a separate mod. SignalsEverywhere reads two mixinto types:
 
 - `signals`: blocks, signals and control points.
 - `ctcPanel`: the CTC panel layout.
