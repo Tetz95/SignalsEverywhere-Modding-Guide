@@ -74,6 +74,33 @@ Each signal at the control point faces into the OS block and uses `interlockingR
 
 When the dispatcher codes a route, the game checks the OS blocks are clear and the switches can move, throws them, then sets the direction. Setting the direction gives traffic direction to the OS blocks and to the outlet's blocks, and fails if the next control point already has traffic set against it on that stretch. Once a train occupies an OS block, the direction is cleared again, and the dispatcher has to code the next move.
 
+### A signal on its own
+
+The auto engineer treats Stop as absolute only at a signal that belongs to an interlocking; any other signal is stop and proceed (see [The auto engineer](02-how-ctc-works.md#the-auto-engineer)). A predicate signal standing on its own, such as a block signal at a signal box, gets the AE's absolute stop when you put it in a module with a **switchless interlocking**: no switches, two empty outlets and one route. The interlocking needs no blocks of its own.
+
+```json
+"COWEE-BOX": {
+  "interlocking": {
+    "id": "cowee-box",
+    "displayName": "Cowee Signal Box",
+    "switchSets": [],
+    "outlets": [
+      { "direction": "Left",  "blocks": [], "nextSignal": null },
+      { "direction": "Right", "blocks": [], "nextSignal": null }
+    ],
+    "routes": [ { "switchFilters": [], "outletLeft": 0, "outletRight": 1 } ]
+  },
+  "predicateSignals": {
+    "cowee-box-down": { "...": "a predicate signal with a Block predicate on cowee-down" }
+  }
+},
+"COWEE-BLOCKS": {
+  "blocks": { "cowee-down": { "...": "the block the signal protects" } }
+}
+```
+
+The signal's aspect still comes from its own predicates, so it clears by itself when its block is free, in CTC and in ABS; nobody has to code it. The AE names it by the interlocking's `displayName` ("Stop, Cowee Signal Box"). Keep the block it protects in another module (here `COWEE-BLOCKS`): in the interlocking's module it would be an OS block. Don't use `InterlockingTrafficDirection` predicates on such a signal: no route is ever coded, so in CTC they never come true.
+
 ## Intermediates
 
 An intermediate covers the automatic signals between two control points.

@@ -217,6 +217,7 @@ The auto engineer (AE) reads the same signals. It obeys Stop, slows for Approach
 
 - In Road mode the AE never throws switches; it stops before one that's set against it ("Switch Against").
 - The AE's Approach speed and how long it holds it come from the game, not the signal mod.
+- **Stop is absolute only at a control point.** A signal belongs to a control point when it sits in a module with an interlocking. Every other signal is an intermediate signal to the AE, and its Stop means stop and proceed: the AE stops about 15 m short, then passes it at 15 mph. A train already stopped within 40 m of it doesn't stop again, it just goes at 15 mph. At a control point signal showing Stop, the AE waits until it clears (or until the player tells it to pass). To make a lone signal absolute, see [A signal on its own](#a-signal-on-its-own).
 
 ---
 
@@ -530,6 +531,33 @@ Each signal at the control point faces into the OS block and uses `interlockingR
 ### Coding a route
 
 When the dispatcher codes a route, the game checks the OS blocks are clear and the switches can move, throws them, then sets the direction. Setting the direction gives traffic direction to the OS blocks and to the outlet's blocks, and fails if the next control point already has traffic set against it on that stretch. Once a train occupies an OS block, the direction is cleared again, and the dispatcher has to code the next move.
+
+### A signal on its own
+
+The auto engineer treats Stop as absolute only at a signal that belongs to an interlocking; any other signal is stop and proceed (see [The auto engineer](#the-auto-engineer)). A predicate signal standing on its own, such as a block signal at a signal box, gets the AE's absolute stop when you put it in a module with a **switchless interlocking**: no switches, two empty outlets and one route. The interlocking needs no blocks of its own.
+
+```json
+"COWEE-BOX": {
+  "interlocking": {
+    "id": "cowee-box",
+    "displayName": "Cowee Signal Box",
+    "switchSets": [],
+    "outlets": [
+      { "direction": "Left",  "blocks": [], "nextSignal": null },
+      { "direction": "Right", "blocks": [], "nextSignal": null }
+    ],
+    "routes": [ { "switchFilters": [], "outletLeft": 0, "outletRight": 1 } ]
+  },
+  "predicateSignals": {
+    "cowee-box-down": { "...": "a predicate signal with a Block predicate on cowee-down" }
+  }
+},
+"COWEE-BLOCKS": {
+  "blocks": { "cowee-down": { "...": "the block the signal protects" } }
+}
+```
+
+The signal's aspect still comes from its own predicates, so it clears by itself when its block is free, in CTC and in ABS; nobody has to code it. The AE names it by the interlocking's `displayName` ("Stop, Cowee Signal Box"). Keep the block it protects in another module (here `COWEE-BLOCKS`): in the interlocking's module it would be an OS block. Don't use `InterlockingTrafficDirection` predicates on such a signal: no route is ever coded, so in CTC they never come true.
 
 ## Intermediates
 
@@ -884,6 +912,17 @@ Two rules follow from this.
 | An array item | `{ "$find": [...], "$remove": true }` | Works. |
 | A property | `"prop": { "$remove": true }` | Fine for an array or plain value. For a property holding an object it fails in 1.4 (see below); `$replace` the parent instead. |
 
+### Map mods that change stock track
+
+A map mod that removes or re-lays stock track (new segment ids for the main line, say) leaves the stock signals there pointing at segments that no longer exist. The game doesn't drop them; their blocks lose their spans (FUSE logs "removed TrackSpan … upper/lower endpoint segment is missing", with the block's name), and signals added to the same group alongside them misbehave in ways that look random. Signals that worked before stop working once the track under the stock ones goes.
+
+Before signalling the new track:
+
+1. List the stock blocks whose spans use a removed segment (compare `signal-old.json` against the map mod's removals).
+2. `null` every stock module that holds them. A whole module goes at once, with its intermediate and interlocking.
+3. Check the stock modules you keep for anything that names what you removed: an outlet's `blocks` or `nextSignal`, an intermediate's ends. `$replace` those outlets, typically with `"blocks": []` and `"nextSignal": null` where the line now ends.
+4. Then add your own modules on the new track, in a patch that loads after the removals.
+
 ## Known problems
 
 These are bugs in SignalsEverywhere 1.4 with fixes sent upstream. Tetz's SignalsEverywhere Fixes applies the first four at run time. Write your mod so it works without it.
@@ -970,7 +1009,7 @@ RailForge orders mods by `loadAfter`. List every mod whose signals or panel you 
 | `panel-dump.json` | The merged panel layout. |
 | `ctcpanel-failed.json` | Written when the panel layout can't be read at all. |
 
-**Logs**: SignalsEverywhere logs patch errors ("Error loading mixinto …"), missing ids ("Block with ID 'x' not found in patching context") and what it created. Under RailForge, also read the `## Signal authoring` section of `Mods/RTM.RailForge/RailForge-support-report.txt` (see [RailForge](#8-railforge)).
+**Logs**: SignalsEverywhere logs patch errors ("Error loading mixinto …"), missing ids ("Block with ID 'x' not found in patching context") and what it created. The missing-id warning isn't always an error: a new predicate signal looks up its blocks once while it's being built, before the blocks defined beside it in the same patch exist, and logs this warning for each of them. A second pass finds them. If the block is in `signal-patched.json`, the warning is harmless; if it isn't, the id is wrong or the block was removed. Under RailForge, also read the `## Signal authoring` section of `Mods/RTM.RailForge/RailForge-support-report.txt` (see [RailForge](#8-railforge)).
 
 ## Patched data is not proof
 
@@ -1000,6 +1039,8 @@ For every control point you add or change:
 | The change is in `signal-patched.json` but not in the game. | An array item edit (`$find`/`$index`/`$add`) that didn't count as a touch. Add a harmless `$replace` to the same component. |
 | A signal is stuck at Approach and never shows Clear. | Its next signal is `null`, or points at a signal that was rebuilt (a stale reference). Touch the control point or predicate signal that names it. |
 | A route drops as soon as a train enters the block approaching the control point, and the lever won't code or cancel while it's there. | That outlet block is defined in the control point's module, which makes it an OS block. Move it to a module without an interlocking. |
+| The AE stops at a red signal, then passes it at 15 mph (or passes at once if it was stopped close to it). | Stop and proceed: the signal isn't in a module with an interlocking, so the AE treats it as an intermediate signal. That's right for block signals; for an absolute signal, see [A signal on its own](#a-signal-on-its-own). |
+| Signals near a map mod's new or moved track never work, or stock signals there show odd aspects. | The map mod removed or re-laid track the stock signals stand on. See [Map mods that change stock track](#map-mods-that-change-stock-track). |
 | A control point's lever does nothing ("no route"). | No route matches the current switch positions, or `switchFilters` don't line up with `switchSets`. |
 | A control point vanished after a patch (plain Railloader). | You patched its module without touching its interlocking/intermediate. |
 | A block never shows occupied. | A span's ends don't connect along the track. Try measuring one end from the other end of its segment. |

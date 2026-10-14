@@ -136,6 +136,17 @@ Two rules follow from this.
 | An array item | `{ "$find": [...], "$remove": true }` | Works. |
 | A property | `"prop": { "$remove": true }` | Fine for an array or plain value. For a property holding an object it fails in 1.4 (see below); `$replace` the parent instead. |
 
+### Map mods that change stock track
+
+A map mod that removes or re-lays stock track (new segment ids for the main line, say) leaves the stock signals there pointing at segments that no longer exist. The game doesn't drop them; their blocks lose their spans (FUSE logs "removed TrackSpan … upper/lower endpoint segment is missing", with the block's name), and signals added to the same group alongside them misbehave in ways that look random. Signals that worked before stop working once the track under the stock ones goes.
+
+Before signalling the new track:
+
+1. List the stock blocks whose spans use a removed segment (compare `signal-old.json` against the map mod's removals).
+2. `null` every stock module that holds them. A whole module goes at once, with its intermediate and interlocking.
+3. Check the stock modules you keep for anything that names what you removed: an outlet's `blocks` or `nextSignal`, an intermediate's ends. `$replace` those outlets, typically with `"blocks": []` and `"nextSignal": null` where the line now ends.
+4. Then add your own modules on the new track, in a patch that loads after the removals.
+
 ## Known problems
 
 These are bugs in SignalsEverywhere 1.4 with fixes sent upstream. Tetz's SignalsEverywhere Fixes applies the first four at run time. Write your mod so it works without it.

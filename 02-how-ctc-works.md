@@ -104,3 +104,4 @@ The auto engineer (AE) reads the same signals. It obeys Stop, slows for Approach
 
 - In Road mode the AE never throws switches; it stops before one that's set against it ("Switch Against").
 - The AE's Approach speed and how long it holds it come from the game, not the signal mod.
+- **Stop is absolute only at a control point.** A signal belongs to a control point when it sits in a module with an interlocking. Every other signal is an intermediate signal to the AE, and its Stop means stop and proceed: the AE stops about 15 m short, then passes it at 15 mph. A train already stopped within 40 m of it doesn't stop again, it just goes at 15 mph. At a control point signal showing Stop, the AE waits until it clears (or until the player tells it to pass). To make a lone signal absolute, see [A signal on its own](05-control-points.md#a-signal-on-its-own).
