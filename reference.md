@@ -148,3 +148,14 @@ Condition: `{ "path": "...", "comparison": "Equals" | "NotEquals" | "StartsWith"
 - Signals naming another control point go in a module after it.
 - Keep `$find` on fields every item has.
 - Check the game, not just `signal-patched.json`. Under RailForge, read `## Signal authoring`.
+- On Railroader 2026.1, check every track id and module key against the 2026.1 dump and `Map.json`, even ones Legacy had.
+
+## Railroader 2026.1
+
+| File | Holds |
+|---|---|
+| `Info.json` | `identifier`, `version`, `name`, `dependencies` (`required`: `rr/game`, `joo/signals-everywhere`, mods you patch; `optional`; `incompatible`), `mixintos` (plain `file(...)` entries only). |
+| `milestones.json` | `mapFeatures` and delivery `milestones` for your own signal milestone. |
+| `map-feature-gates.json` | Ties modules to a map feature (read by SignalsEverywhere itself). |
+
+Console (host): `/signaldebug dump signals|panel`, `reload`, `rebuild-panel`, `show-panel`.
