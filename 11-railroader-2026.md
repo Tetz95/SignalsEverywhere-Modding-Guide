@@ -4,7 +4,7 @@ Railroader 2026.1 (Maintenance of Way) has its own mod loader. Railloader, RailF
 
 ## Getting SignalsEverywhere for 2026.1
 
-The 2026.1 build is waiting to be merged into SignalsEverywhere ([pull request #15](https://github.com/Joo200/Railloader-JooMods/pull/15), October 2026). Until Joo releases it, it's on the `rr2026-signalseverywhere` branch of [Tetz95/Railloader-JooMods](https://github.com/Tetz95/Railloader-JooMods/tree/rr2026-signalseverywhere), built with `dotnet build SignalsEverywhere -p:RR=2026`. It has the same mod identifier Joo's release will have, `joo/signals-everywhere`, so your mod won't need changing when the official release comes.
+The 2026.1 build is waiting to be merged into SignalsEverywhere ([pull request #15](https://github.com/Joo200/Railloader-JooMods/pull/15), October 2026). Until Joo releases it, download it from the [releases of Tetz95/Railloader-JooMods](https://github.com/Tetz95/Railloader-JooMods/releases) (source: branch `rr2026-signalseverywhere`, built with `dotnet build SignalsEverywhere -p:RR=2026`). It has the same mod identifier Joo's release will have, `joo/signals-everywhere`, so your mod won't need changing when the official release comes.
 
 It includes every fix listed under [Known problems](07-patching.md#known-problems) and the features of Tetz's SignalsEverywhere Fixes (map feature gates, panel scrolling). SignalsEverywhere Fixes is Legacy only; don't port it.
 
