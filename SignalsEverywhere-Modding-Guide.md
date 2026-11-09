@@ -18,7 +18,7 @@ It's written for mod authors who are comfortable editing JSON. You don't need to
 8. [RailForge](#8-railforge): its extra checks and how to pass them.
 9. [Testing and debugging](#9-testing-and-debugging): tools, files and a symptom checklist.
 10. [Worked examples](#10-worked-examples): a signal-only control point, a passing siding, and a junction added to an existing control point.
-11. [Railroader 2026.1](#11-railroader-20261): the game's own mod loader, the new map, your own signal milestone, and porting a Legacy mod.
+11. [Railroader 0.6](#11-railroader-06): the game's own mod loader, the new map, your own signal milestone, and porting a Legacy mod.
 
 [Quick reference](#quick-reference): every property and patch instruction on one page.
 
@@ -27,7 +27,7 @@ It's written for mod authors who are comfortable editing JSON. You don't need to
 Written against SignalsEverywhere 1.4 (October 2026), for both versions of the game:
 
 - **Legacy** (Railroader 2025.1 and earlier), with Railloader, RailForge or FUSE. Some behavior described here is a bug with a fix waiting to be merged; those spots are marked, with a workaround. [Tetz's SignalsEverywhere Fixes](https://www.nexusmods.com/railroader/mods/1807) applies most of those fixes at run time, but write your mod so it works without it.
-- **Railroader 2026.1**, with SignalsEverywhere's 2026.1 build, which has those fixes built in. The signal data is the same; what's different (the mod files, the map, the tools) is in [Railroader 2026.1](#11-railroader-20261). Chapters 1 to 10 mark the other places where 2026.1 differs.
+- **Railroader 0.6**, with SignalsEverywhere's 0.6 build, which has those fixes built in. The signal data is the same; what's different (the mod files, the map, the tools) is in [Railroader 0.6](#11-railroader-06). Chapters 1 to 10 mark the other places where 0.6 differs.
 
 ## Credits
 
@@ -49,8 +49,8 @@ This guide is licensed under [Creative Commons Attribution 4.0 International (CC
   - RailForge;
   - FUSE.
   RailForge and FUSE each replace both Railloader and StrangeCustoms, so don't install those alongside them.
-  On Railroader 2026.1 none of these run: the game loads SignalsEverywhere itself (see [Railroader 2026.1](#11-railroader-20261)).
-- **SignalsEverywhere** (on 2026.1, its 2026.1 build).
+  On Railroader 0.6 none of these run: the game loads SignalsEverywhere itself (see [Railroader 0.6](#11-railroader-06)).
+- **SignalsEverywhere** (on 0.6, its 0.6 build).
 - A text editor that understands JSON. SignalsEverywhere ships JSON schemas (`signals.schema.json`, `ctc-panel-layout.schema.json`) in its mod folder. Point your file's `$schema` at them for hints; SignalsEverywhere removes the `$schema` key before it reads the file. Be aware that the schemas in SignalsEverywhere 1.4 reject some valid data, so treat schema errors as hints, not proof.
 
 ## The mod definition
@@ -85,7 +85,7 @@ A mixinto that only applies when another mod is installed:
 "game-graph": [ { "mixinto": "file(signs.json)", "requires": [ "ALW.SceneryAssets" ] } ]
 ```
 
-On 2026.1 the mod file is the game's `Info.json`, with the same `mixintos` object; conditional entries like the one above aren't supported there. See [The mod files](#the-mod-files).
+On 0.6 the mod file is the game's `Info.json`, with the same `mixintos` object; conditional entries like the one above aren't supported there. See [The mod files](#the-mod-files).
 
 ## How SignalsEverywhere uses your files
 
@@ -106,13 +106,13 @@ This has two consequences you'll meet again and again:
 
 1. **Dump what's there.** Run `/signaldebug dump signals` in the game console (host only). SignalsEverywhere writes `signal-old.json` (original data) and `signal-patched.json` (after all mods) into its own mod folder. `/signaldebug dump panel` writes `panel-dump.json`. These are your map: real ids, real locations and the exact structure to patch.
 2. **Write your patch.**
-3. **Reload.** SignalsEverywhere's mod tab has **Reload Signal Definitions** and **Rebuild CTCPanel** buttons, so small changes don't need a restart (on 2026.1: `/signaldebug reload` and `/signaldebug rebuild-panel`). Restart the game when something looks stale.
+3. **Reload.** SignalsEverywhere's mod tab has **Reload Signal Definitions** and **Rebuild CTCPanel** buttons, so small changes don't need a restart (on 0.6: `/signaldebug reload` and `/signaldebug rebuild-panel`). Restart the game when something looks stale.
 4. **Check it.** Dump again and compare `signal-patched.json` with what you meant. Then check the game itself: patched data is not proof that a change reached the game (see [Testing and debugging](#9-testing-and-debugging)).
 5. **Drive it.** Run a train through in both directions, in CTC and in ABS.
 
 ## Finding track ids
 
-Everything is placed by track **segment** ids (like `S4u5`) and switch **node** ids (like `Nuam`). The dumps give you every id the game's signals already use. For new places you need the track graph: get it from a track graph export, or from the `game-graph` file of a mod that changes that area. On 2026.1 the base map's `Map.json` has it (see [The map](#the-map)); its ids differ from Legacy's in many places.
+Everything is placed by track **segment** ids (like `S4u5`) and switch **node** ids (like `Nuam`). The dumps give you every id the game's signals already use. For new places you need the track graph: get it from a track graph export, or from the `game-graph` file of a mod that changes that area. On 0.6 the base map's `Map.json` has it (see [The map](#the-map)); its ids differ from Legacy's in many places.
 
 Track ids mean nothing to a reader, so in your notes and commit messages always pair them with a plain name, like `Nuam (Cochran West switch)`.
 
@@ -153,7 +153,7 @@ Ids of blocks and signals must be unique across the whole railroad, not just the
 
 ## Tying modules to a milestone
 
-A feature is switched on by the game's own signal milestone for that stretch, and everything in it comes on together: modules you add to `BK-AJ-HW` appear as soon as the stock Bryson to Whittier signals do. To make your modules wait for a milestone of your own (on Legacy, a progression section in a `game-graph` file that unlocks a map feature; on 2026.1, a `milestones.json`, see [Your own signal milestone](#your-own-signal-milestone)), add a `map-feature-gates.json` to your mod folder:
+A feature is switched on by the game's own signal milestone for that stretch, and everything in it comes on together: modules you add to `BK-AJ-HW` appear as soon as the stock Bryson to Whittier signals do. To make your modules wait for a milestone of your own (on Legacy, a progression section in a `game-graph` file that unlocks a map feature; on 0.6, a `milestones.json`, see [Your own signal milestone](#your-own-signal-milestone)), add a `map-feature-gates.json` to your mod folder:
 
 ```json
 {
@@ -172,7 +172,7 @@ A feature is switched on by the game's own signal milestone for that stretch, an
 - **`fallbackMapFeature`** (optional): used instead when the running game's progression has no section that unlocks `mapFeature`, for example a start your progression file doesn't add the section to. Use the map feature that builds the track, so the signals still come on with the line.
 - **`feature`** and **`modules`**: the feature your modules are in, and their keys.
 
-On 2026.1, SignalsEverywhere reads this file itself. On Legacy it doesn't: [Tetz's SignalsEverywhere Fixes](https://www.nexusmods.com/railroader/mods/1807) 1.8.0 or later reads it from every mod folder and switches the modules with the map feature, so the file works under RailForge, FUSE and Railloader alike. Without SignalsEverywhere Fixes the file does nothing and the modules come on with their feature, so make sure that's acceptable, or list SignalsEverywhere Fixes as a requirement. In sandbox, the modules follow the map feature as set in the sandbox options.
+On 0.6, SignalsEverywhere reads this file itself. On Legacy it doesn't: [Tetz's SignalsEverywhere Fixes](https://www.nexusmods.com/railroader/mods/1807) 1.8.0 or later reads it from every mod folder and switches the modules with the map feature, so the file works under RailForge, FUSE and Railloader alike. Without SignalsEverywhere Fixes the file does nothing and the modules come on with their feature, so make sure that's acceptable, or list SignalsEverywhere Fixes as a requirement. In sandbox, the modules follow the map feature as set in the sandbox options.
 
 ## Blocks
 
@@ -246,7 +246,7 @@ The same point can be written from either end: on a 100 m segment, `20 from Star
 
 **For signals, the end you measure from also sets which way the signal faces.** The signal faces the end you measured from, so it's read by trains coming from that end. Measure a signal's location from the end trains approach it from.
 
-A location must lie inside its segment. A distance longer than the segment is an error (RailForge refuses the whole module), and so is a segment id that doesn't exist. If another mod changes the track, segment lengths and ids can change under you. See [RailForge](#8-railforge).
+A location must lie inside its segment. A distance longer than the segment is an error (RailForge refuses the whole module; on 0.6 that span is dropped, even when it's a millimetre too long, so keep 5 cm inside the ends), and so is a segment id that doesn't exist. If another mod changes the track, segment lengths and ids can change under you. See [RailForge](#8-railforge).
 
 ## Blocks
 
@@ -313,7 +313,7 @@ Anything that still names it (a signal, an outlet, an intermediate) needs changi
 
 SignalsEverywhere's mod tab has a **Blocks** dropdown. Pick a block and its spans are highlighted on the track. Use it to check every new block before you test with trains.
 
-Railroader 2026.1 has no mod tabs, so there's no highlight there: put a car on the block and watch its panel light.
+Railroader 0.6 has no mod tabs, so there's no highlight there: put a car on the block and watch its panel light.
 
 ---
 
@@ -455,13 +455,13 @@ Set it to `null`:
 ```
 
 - **Auto signals**: safe.
-- **Predicate signals**: SignalsEverywhere 1.4 crashes on a `null` predicate signal and skips the rest of that module (fixed by Tetz's SignalsEverywhere Fixes and in the 2026.1 build, pending upstream as PR #5). RailForge refuses the whole module instead. Rather than removing a predicate signal, rewrite it (or move it with `$moveTo`, but never a control point's signal; see [RailForge](#forward-references)). See [Patching](#known-problems).
+- **Predicate signals**: SignalsEverywhere 1.4 crashes on a `null` predicate signal and skips the rest of that module (fixed by Tetz's SignalsEverywhere Fixes and in the 0.6 build, pending upstream as PR #5). RailForge refuses the whole module instead. Rather than removing a predicate signal, rewrite it (or move it with `$moveTo`, but never a control point's signal; see [RailForge](#forward-references)). See [Patching](#known-problems).
 
 ## Signals are rebuilt, not edited
 
 When a patch touches a signal at all, SignalsEverywhere deletes the game object and builds a new one. Anything that pointed at the old one keeps pointing at a deleted object unless it is rebuilt too. That includes interlocking outlets (`nextSignal`) and predicate heads (`nextCtcSignal`) in other modules. Such a stale pointer counts as "no next signal", so the signal behind it is stuck at Approach.
 
-So whenever you change a signal, also touch everything that names it. [Patching](#what-gets-rebuilt) has the full rule. SignalsEverywhere's 2026.1 build relinks these pointers after every build, but touching them costs nothing and keeps the mod working with 1.4.
+So whenever you change a signal, also touch everything that names it. [Patching](#what-gets-rebuilt) has the full rule. SignalsEverywhere's 0.6 build relinks these pointers after every build, but touching them costs nothing and keeps the mod working with 1.4.
 
 ---
 
@@ -600,7 +600,7 @@ Between two control points with no intermediate signals, you still need the bloc
 
 The control points at each end must name the intermediate's end blocks in their outlets, and their outlets' `nextSignal` should be the first intermediate signal in that direction. The links go both ways: if you add or move a signal on the line, update the intermediate and the control points.
 
-**The stock intermediates on a feature object.** A few of the game's intermediates (between Whittier and Bryson) sit on the feature object instead of in a module, so they can't be patched. When you add a control point next to one, it keeps pointing at the old signal. Tetz's SignalsEverywhere Fixes relinks it (pending upstream as PR #8), and so does the 2026.1 build. Without either, avoid putting a new control point at the end of one of those intermediates.
+**The stock intermediates on a feature object.** A few of the game's intermediates (between Whittier and Bryson) sit on the feature object instead of in a module, so they can't be patched. When you add a control point next to one, it keeps pointing at the old signal. Tetz's SignalsEverywhere Fixes relinks it (pending upstream as PR #8), and so does the 0.6 build. Without either, avoid putting a new control point at the end of one of those intermediates.
 
 ## Crossovers
 
@@ -779,7 +779,7 @@ For a new section, you can write plain elements. But if two mods add to the same
 
 ## Checking the panel
 
-Use **Dump CTCPanel** in SignalsEverywhere's mod tab (or `/signaldebug dump panel`) to write the merged layout to `panel-dump.json` in SignalsEverywhere's folder. If the layout can't be read at all, SignalsEverywhere writes what it had to `ctcpanel-failed.json` and the panel won't open. **Rebuild CTCPanel** reloads the layout without restarting. On 2026.1 these are console commands: `/signaldebug dump panel` and `/signaldebug rebuild-panel`.
+Use **Dump CTCPanel** in SignalsEverywhere's mod tab (or `/signaldebug dump panel`) to write the merged layout to `panel-dump.json` in SignalsEverywhere's folder. If the layout can't be read at all, SignalsEverywhere writes what it had to `ctcpanel-failed.json` and the panel won't open. **Rebuild CTCPanel** reloads the layout without restarting. On 0.6 these are console commands: `/signaldebug dump panel` and `/signaldebug rebuild-panel`.
 
 ---
 
@@ -902,7 +902,7 @@ SignalsEverywhere records every path a patch changes, then rebuilds only what wa
 
 Two rules follow from this.
 
-**Touch the control point when you patch its module.** In SignalsEverywhere 1.4, when a module is rebuilt and its interlocking, intermediate or crossover was not touched, that component is **deleted**. RailForge prevents this, but under plain Railloader it happens, and on Railroader 2026.1 too. So whenever you patch anything in a module that has one, also touch it. The easiest harmless touch is replacing an array with its current value:
+**Touch the control point when you patch its module.** In SignalsEverywhere 1.4, when a module is rebuilt and its interlocking, intermediate or crossover was not touched, that component is **deleted**. RailForge prevents this, but under plain Railloader it happens, and on Railroader 0.6 too. So whenever you patch anything in a module that has one, also touch it. The easiest harmless touch is replacing an array with its current value:
 
 ```json
 "interlocking": { "switchSets": { "$replace": [ [ "Nuam" ] ] } }
@@ -934,7 +934,7 @@ Before signalling the new track:
 
 ## Known problems
 
-These are bugs in SignalsEverywhere 1.4 with fixes sent upstream. Tetz's SignalsEverywhere Fixes applies the first four at run time, and SignalsEverywhere's 2026.1 build has all of them built in. On Legacy, write your mod so it works without them.
+These are bugs in SignalsEverywhere 1.4 with fixes sent upstream. Tetz's SignalsEverywhere Fixes applies the first four at run time, and SignalsEverywhere's 0.6 build has all of them built in. On Legacy, write your mod so it works without them.
 
 | Problem | Symptom | Workaround | Upstream |
 |---|---|---|---|
@@ -950,11 +950,11 @@ These are bugs in SignalsEverywhere 1.4 with fixes sent upstream. Tetz's Signals
 
 RailForge replaces Railloader and StrangeCustoms: it loads Railloader-style mods, including SignalsEverywhere, and adds its own handling for signal mods. Most Legacy players use it, so test under it. It changes three things.
 
-RailForge is Legacy only. On Railroader 2026.1 none of this applies: see [Without RailForge](#without-railforge).
+RailForge is Legacy only. On Railroader 0.6 none of this applies: see [Without RailForge](#without-railforge).
 
 ## It keeps untouched control points
 
-Under RailForge, patching part of a module no longer deletes an interlocking, intermediate or crossover you didn't touch (see [What gets rebuilt](#what-gets-rebuilt)). Keep touching them anyway, so your mod works under plain Railloader and on Railroader 2026.1 too.
+Under RailForge, patching part of a module no longer deletes an interlocking, intermediate or crossover you didn't touch (see [What gets rebuilt](#what-gets-rebuilt)). Keep touching them anyway, so your mod works under plain Railloader and on Railroader 0.6 too.
 
 ## It checks every patched module first
 
@@ -1011,7 +1011,7 @@ RailForge orders mods by `loadAfter`. List every mod whose signals or panel you 
 - `/signaldebug dump signals`: same as Dump Signals.
 - `/signaldebug dump panel`: same as Dump CTCPanel.
 
-On Railroader 2026.1 there's no mod tab: `/signaldebug reload`, `rebuild-panel` and `show-panel` stand in for the buttons, and there's no Blocks highlight (see [Tools on 2026.1](#tools-on-20261)).
+On Railroader 0.6 there's no mod tab: `/signaldebug reload`, `rebuild-panel` and `show-panel` stand in for the buttons, and there's no Blocks highlight (see [Tools on 0.6](#tools-on-06)).
 
 **Files** in SignalsEverywhere's mod folder:
 
@@ -1055,7 +1055,7 @@ For every control point you add or change:
 | The AE stops at a red signal, then passes it at 15 mph (or passes at once if it was stopped close to it). | Stop and proceed: the signal isn't in a module with an interlocking, so the AE treats it as an intermediate signal. That's right for block signals; for an absolute signal, see [A signal on its own](#a-signal-on-its-own). |
 | Signals near a map mod's new or moved track never work, or stock signals there show odd aspects. | The map mod removed or re-laid track the stock signals stand on. See [Map mods that change stock track](#map-mods-that-change-stock-track). |
 | A control point's lever does nothing ("no route"). | No route matches the current switch positions, or `switchFilters` don't line up with `switchSets`. |
-| A control point vanished after a patch (plain Railloader or 2026.1). | You patched its module without touching its interlocking/intermediate. |
+| A control point vanished after a patch (plain Railloader or 0.6). | You patched its module without touching its interlocking/intermediate. |
 | A block never shows occupied. | A span's ends don't connect along the track. Try measuring one end from the other end of its segment. |
 | A block shows occupied with no train. | It overlaps a hand-thrown switch, or another train's block. Check with the Blocks highlight. |
 | A signal faces the wrong way. | Its location is measured from the wrong end. |
@@ -1190,7 +1190,7 @@ Points to notice:
 
 ## Example 3: adding a junction to an existing control point
 
-The Robinson Gap mine lead joins the main line just west of Alarka Jct West (`aj-w`). A real railroad would make the new switch part of the existing control point, worked from the same lever. On Legacy this needs Tetz's SignalsEverywhere Fixes, because `aj-w` shares a module with `aj-e` in the base game; the Fixes mod moves it into its own module, `AJ-W`. On Railroader 2026.1 the base game already has the `AJ-W` module.
+The Robinson Gap mine lead joins the main line just west of Alarka Jct West (`aj-w`). A real railroad would make the new switch part of the existing control point, worked from the same lever. On Legacy this needs Tetz's SignalsEverywhere Fixes, because `aj-w` shares a module with `aj-e` in the base game; the Fixes mod moves it into its own module, `AJ-W`. On Railroader 0.6 the base game already has the `AJ-W` module.
 
 ### The interlocking: add a switch set, double the routes
 
@@ -1278,13 +1278,13 @@ The Robinson Gap mine lead joins the main line just west of Alarka Jct West (`aj
 
 ---
 
-# 11. Railroader 2026.1
+# 11. Railroader 0.6
 
-Railroader 2026.1 (Maintenance of Way) has its own mod loader. Railloader, RailForge, FUSE and StrangeCustoms don't run on it, and the map editor can't make signals yet. SignalsEverywhere has a 2026.1 build that loads signal mods itself. The signal data is the same, so almost everything in this guide still applies. This page covers what's different.
+Railroader 0.6 (Maintenance of Way; on Steam it first appeared as the 2026.1 experimental branch, and some pages still call it that) has its own mod loader. Railloader, RailForge, FUSE and StrangeCustoms don't run on it, and the map editor can't make signals yet. SignalsEverywhere has a 0.6 build that loads signal mods itself. The signal data is the same, so almost everything in this guide still applies. This page covers what's different.
 
-## Getting SignalsEverywhere for 2026.1
+## Getting SignalsEverywhere for 0.6
 
-The 2026.1 build is waiting to be merged into SignalsEverywhere ([pull request #15](https://github.com/Joo200/Railloader-JooMods/pull/15), October 2026). Until Joo releases it, download it from the [releases of Tetz95/Railloader-JooMods](https://github.com/Tetz95/Railloader-JooMods/releases) (source: branch `rr2026-signalseverywhere`, built with `dotnet build SignalsEverywhere -p:RR=2026`). It has the same mod identifier Joo's release will have, `joo/signals-everywhere`, so your mod won't need changing when the official release comes.
+The 0.6 build is waiting to be merged into SignalsEverywhere ([pull request #15](https://github.com/Joo200/Railloader-JooMods/pull/15), October 2026). Until Joo releases it, download it from the [releases of Tetz95/Railloader-JooMods](https://github.com/Tetz95/Railloader-JooMods/releases) (source: branch `rr2026-signalseverywhere`, built with `dotnet build SignalsEverywhere -p:RR=2026`). It has the same mod identifier Joo's release will have, `joo/signals-everywhere`, so your mod won't need changing when the official release comes.
 
 It includes every fix listed under [Known problems](#known-problems) and the features of Tetz's SignalsEverywhere Fixes (map feature gates, panel scrolling). SignalsEverywhere Fixes is Legacy only; don't port it.
 
@@ -1295,7 +1295,7 @@ Players need two things:
 
 ## The mod files
 
-A 2026.1 mod is a folder in the game's `Mods` folder (`Documents\Railroader\Mods` unless the game is started with another home folder) with an `Info.json`. Put the mixintos in the same file:
+A 0.6 mod is a folder in the game's `Mods` folder (`Documents\Railroader\Mods` unless the game is started with another home folder) with an `Info.json`. Put the mixintos in the same file:
 
 ```json
 {
@@ -1319,7 +1319,7 @@ A 2026.1 mod is a folder in the game's `Mods` folder (`Documents\Railroader\Mods
 - **`mixintos`**: the same as in a Legacy `Definition.json`. A `Definition.json` with a `mixintos` object beside `Info.json` works too, so a Legacy mod can keep its file. SignalsEverywhere only reads mixintos from mods the game has loaded.
 - Don't give the mod a `scope`. SignalsEverywhere is a content mod, which every player in a multiplayer game has, and signals must be the same for every player.
 
-Mixinto lists are plain file names on 2026.1. A list entry with its own `requires` (an object instead of a string, see [The mod definition](#the-mod-definition)) is skipped. For a file that should only apply when another mod is installed, ship it as a second small mod that requires that mod.
+Mixinto lists are plain file names on 0.6. A list entry with its own `requires` (an object instead of a string, see [The mod definition](#the-mod-definition)) is skipped. For a file that should only apply when another mod is installed, ship it as a second small mod that requires that mod.
 
 ### Load order
 
@@ -1331,32 +1331,42 @@ If you publish both a combined mod and separate mods with the same signals, list
 
 ## The map
 
-2026.1's map isn't Legacy's. The main line is realigned at East Whittier, Dillsboro and Sylva, Walker has lost its switchbacks, and the stock signals were reworked with it. Don't assume a Legacy id or location still fits.
+0.6's map isn't Legacy's. The main line is realigned at East Whittier, Dillsboro and Sylva, Walker has lost its switchbacks, and the stock signals were reworked with it. Don't assume a Legacy id or location still fits.
 
-- **Track ids.** Many ids survived: segments and nodes Legacy had are often still there under the same id, but a lot of them have moved, some by tens of meters. New ids don't start with `S` or `N`; they're six random characters, like `qefeuz` or `7a3rv9`. Check every location against the 2026.1 track, and every switch node, even where the id is unchanged.
-- **Where to find them.** The base map is `Railroader_Data\StreamingAssets\AssetPacksCore\nc-bryson-terrain\Data\Map.json` in the game folder. Its `graph` has every node (`position`) and every segment (its end nodes `a` and `b`). A location's `Start` is the segment's `a` end and `End` its `b` end. The 2026.1 dump (`/signaldebug dump signals`) gives every id the stock signals use.
-- **Features and modules.** Dump `signal-old.json` on 2026.1 before you patch anything: module keys and which module holds a block changed. Sylva West's block `sy-w` is in module `SY-App`, for example, and Alarka Jct West already has its own module, `AJ-W`. A patch aimed at the wrong module doesn't fail cleanly: a `$replace` on something that isn't there is copied in raw, and then building the signals fails ("Error building signals").
-- **Track changes.** There are no `game-graph` mixintos on 2026.1. Mods change the map with a map mod or a Relay `Data.rl` script (`modifyMap`). Signals on a map mod's track need that mod as a dependency, so its track exists before your signals are built.
+- **Track ids.** Many ids survived: segments and nodes Legacy had are often still there under the same id, but a lot of them have moved, some by tens of meters. New ids don't start with `S` or `N`; they're six random characters, like `qefeuz` or `7a3rv9`. Check every location against the 0.6 track, and every switch node, even where the id is unchanged.
+- **Where to find them.** The base map is `Railroader_Data\StreamingAssets\AssetPacksCore\nc-bryson-terrain\Data\Map.json` in the game folder. Its `graph` has every node (`position`) and every segment (its end nodes `a` and `b`). A location's `Start` is the segment's `a` end and `End` its `b` end. The 0.6 dump (`/signaldebug dump signals`) gives every id the stock signals use.
+- **Features and modules.** Dump `signal-old.json` on 0.6 before you patch anything: module keys and which module holds a block changed. Sylva West's block `sy-w` is in module `SY-App`, for example, and Alarka Jct West already has its own module, `AJ-W`. A patch aimed at the wrong module doesn't fail cleanly: a `$replace` on something that isn't there is copied in raw, and then building the signals fails ("Error building signals").
+- **Track changes.** There are no `game-graph` mixintos on 0.6. Mods change the map with a map mod or a Relay `Data.rl` script (`modifyMap`). Signals on a map mod's track need that mod as a dependency, so its track exists before your signals are built.
 
 ### Porting a Legacy signal mod
 
-1. Dump the 2026.1 signals and compare the modules you patch with the Legacy dump. Rewrite patches whose target moved or changed.
-2. Move every location to the 2026.1 track. Where the segment still runs between the same two nodes and the location sits on a node, it can stay. Anything else needs a fresh look: find the point on the old track, then the nearest point on the new one, keeping the end it's measured from.
+1. Dump the 0.6 signals and compare the modules you patch with the Legacy dump. Rewrite patches whose target moved or changed.
+2. Move every location to the 0.6 track. Where the segment still runs between the same two nodes and the location sits on a node, it can stay. Anything else needs a fresh look: find the point on the old track, then the nearest point on the new one, keeping the end it's measured from.
 3. Check every switch node in `switchSets` and `Switch` predicates exists and is the switch you mean.
 4. Write the `Info.json`, and move conditional mixintos into their own mods.
 5. Test it as you would a new mod ([A test run](#a-test-run)).
 
 ## Without RailForge
 
-RailForge did three things for signal mods. On 2026.1 nobody does them:
+RailForge did three things for signal mods. On 0.6 nobody does them:
 
 - **Untouched control points are deleted again.** Patch anything in a module with an interlocking, intermediate or crossover and don't touch that component, and it's deleted, as under plain Railloader. Always touch it (see [What gets rebuilt](#what-gets-rebuilt)).
 - **Nothing checks your modules first.** There's no support report and no deferring. A bad id or location shows as an error in `Player.log`, and the rest works or fails without a word on screen.
-- **No forward-reference check.** SignalsEverywhere indexes every existing control point before it builds, so a predicate signal may name a stock control point in a later module. A new control point should still come before the signals that name it.
+- **No forward-reference check.** SignalsEverywhere indexes every existing control point before it builds, so a predicate signal may name a stock control point in a later module. A *new* control point must come before every signal that names it: a predicate naming an interlocking your mod adds in a later module crashes that whole module (`KeyNotFoundException` in `Player.log`), and none of its signals are built. Blocks are looked up again at the end of the build, so only the order of interlockings matters. Order your modules so the ones with new control points come first.
+
+## Pitfalls on 0.6
+
+Found while building signals on 0.6. Some of them may hold on Legacy too, where RailForge's checks usually catch them first.
+
+- **Keep locations at least 5 cm inside their segment.** A span or signal location even a millimetre past the segment's end throws `SCPatchingException`, and that span is dropped while the rest of the module builds. Segment lengths in `Map.json` are rounded, so don't place anything exactly on a segment end by distance: measure it from the other end, or stay a few centimetres in.
+- **Patching a stock block replaces only its spans.** A `thrownSwitchesSetOccupied` you set on an existing block is ignored. This matters when you add a switch to a stock control point that had none (a signal-only control point): the switch's block keeps reading a thrown switch as occupancy, and the home signal stays at Stop with the route lined. Give the switch a new OS block in the control point's own module instead of extending the stock one.
+- **An intermediate's end blocks must be outlet blocks of its control points.** If the first or last block of an intermediate isn't in an outlet of the control point at that end, the game's intermediate check throws. Either add the block to that outlet or leave the intermediate out (see [Intermediates](#intermediates-1)).
+- **The dispatcher can't code into an occupied outlet block.** An outlet into an industry or yard track, where cars stand most of the time, is best given no blocks at all, so a route into it can still be coded; signal it as Restricting.
+
 
 ## Your own signal milestone
 
-On Legacy, a mod adds a milestone with a progression section in a `game-graph` file. On 2026.1, milestones are part of the game's scenes, out of reach of data files and Relay. SignalsEverywhere lets a signal mod add one with a `milestones.json` in its folder:
+On Legacy, a mod adds a milestone with a progression section in a `game-graph` file. On 0.6, milestones are part of the game's scenes, out of reach of data files and Relay. SignalsEverywhere lets a signal mod add one with a `milestones.json` in its folder:
 
 ```json
 {
@@ -1425,9 +1435,9 @@ func modifyMap(map) {
 
 Map data writes a location as `segment|end|distance`, with ends `a` and `b`.
 
-Then tie your modules to the map feature with a `map-feature-gates.json` ([Tying modules to a milestone](#tying-modules-to-a-milestone)). On 2026.1, SignalsEverywhere reads it itself. Use the line's own map feature (here `alarka`) as the `fallbackMapFeature`, so starts without your milestone still get the signals with the track.
+Then tie your modules to the map feature with a `map-feature-gates.json` ([Tying modules to a milestone](#tying-modules-to-a-milestone)). On 0.6, SignalsEverywhere reads it itself. Use the line's own map feature (here `alarka`) as the `fallbackMapFeature`, so starts without your milestone still get the signals with the track.
 
-## Tools on 2026.1
+## Tools on 0.6
 
 The game has no mod tabs, so SignalsEverywhere's buttons are console commands. Run them as the host:
 
@@ -1441,9 +1451,11 @@ The game has no mod tabs, so SignalsEverywhere's buttons are console commands. R
 
 The files are written to SignalsEverywhere's own folder in `Mods`. There's no Blocks highlight: check a new block with a car and the panel light. SignalsEverywhere logs to `Player.log` (`%USERPROFILE%\AppData\LocalLow\Giraffe Lab LLC\Railroader\Player.log`).
 
+SignalsEverywhere adds its signals when the game's CTC panel starts. In a save where the panel never starts, the log has no "Adding signals" line and no patching warnings, and the added signals aren't there; that doesn't mean your mod failed. Test in a save on a stretch with CTC, and check the log of a session where the panel has been opened. A handful of "Block ... not found in patching context" warnings on each build are harmless if the named blocks exist afterwards (see [Tools](#tools)).
+
 ## An example
 
-[Tetz's Branch Junctions](https://www.nexusmods.com/railroader/mods/1809) has 2026.1 files: the combined mod and four separate ones that declare each other incompatible, patches to stock control points (Alarka Jct West, Bryson East), a new two-plant junction, and Alarka Branch Signals with its own milestone, delivery site and gate.
+[Tetz's Branch Junctions](https://www.nexusmods.com/railroader/mods/1809) has 0.6 files: the combined mod and four separate ones that declare each other incompatible, patches to stock control points (Alarka Jct West, Bryson East), a new two-plant junction, and Alarka Branch Signals with its own milestone, delivery site and gate.
 
 ---
 
@@ -1597,9 +1609,9 @@ Condition: `{ "path": "...", "comparison": "Equals" | "NotEquals" | "StartsWith"
 - Signals naming another control point go in a module after it.
 - Keep `$find` on fields every item has.
 - Check the game, not just `signal-patched.json`. Under RailForge, read `## Signal authoring`.
-- On Railroader 2026.1, check every track id and module key against the 2026.1 dump and `Map.json`, even ones Legacy had.
+- On Railroader 0.6, check every track id and module key against the 0.6 dump and `Map.json`, even ones Legacy had.
 
-## Railroader 2026.1
+## Railroader 0.6
 
 | File | Holds |
 |---|---|
@@ -1608,3 +1620,5 @@ Condition: `{ "path": "...", "comparison": "Equals" | "NotEquals" | "StartsWith"
 | `map-feature-gates.json` | Ties modules to a map feature (read by SignalsEverywhere itself). |
 
 Console (host): `/signaldebug dump signals|panel`, `reload`, `rebuild-panel`, `show-panel`.
+
+Pitfalls ([details](#pitfalls-on-06)): new control points in modules before the signals that name them; locations 5 cm or more inside segment ends; `thrownSwitchesSetOccupied` can't be patched on a stock block; an intermediate's end blocks are outlet blocks; no blocks in outlets where cars stand.
